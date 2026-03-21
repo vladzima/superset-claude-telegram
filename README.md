@@ -81,7 +81,12 @@ Topic name is derived from `$SUPERSET_WORKSPACE_NAME` (set by Superset) or falls
 
 ## Adding to an existing project
 
-Copy `setup.sh` to your project root and create the Terminal Preset as described above.
+Copy `setup.sh` to your project root, make it executable, and create the Terminal Preset as described above.
+
+```bash
+cp /path/to/superset-claude-telegram/setup.sh .
+chmod +x setup.sh
+```
 
 ## Security notes
 
