@@ -1,7 +1,4 @@
 {
   "setup": [],
-  "teardown": [],
-  "run": [
-    "#!/usr/bin/env bash\nset -euo pipefail\n\nTOKEN_FILE=\"$HOME/.claude/channels/telegram/.env\"\nTOKEN_VAR=\"TELEGRAM_BOT_TOKEN\"\n\n# 1. Install the Telegram plugin (idempotent — safe to re-run)\necho \"Ensuring Telegram plugin is installed...\"\nclaude plugin install telegram@claude-plugins-official 2>/dev/null || true\n\n# 2. Ensure the bot token is configured\nif [ -f \"$TOKEN_FILE\" ] && grep -q \"^${TOKEN_VAR}=\" \"$TOKEN_FILE\" 2>/dev/null; then\n  echo \"Telegram bot token already configured.\"\nelse\n  echo \"\"\n  echo \"No Telegram bot token found.\"\n  echo \"Create a bot via @BotFather on Telegram, then paste the token below.\"\n  echo \"\"\n  printf \"Bot token: \"\n  read -r TOKEN\n\n  if [ -z \"$TOKEN\" ]; then\n    echo \"No token provided, skipping Telegram setup.\"\n    exit 1\n  fi\n\n  mkdir -p \"$(dirname \"$TOKEN_FILE\")\"\n  echo \"${TOKEN_VAR}=${TOKEN}\" > \"$TOKEN_FILE\"\n  echo \"Token saved.\"\nfi\n\n# 3. Launch Claude Code with Telegram channel\necho \"Starting Claude Code with Telegram...\"\nexec claude --channels plugin:telegram@claude-plugins-official"
-  ]
+  "teardown": []
 }
