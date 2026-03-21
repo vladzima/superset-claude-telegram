@@ -19,15 +19,20 @@ claude plugin install "$PLUGIN" 2>/dev/null || true
 # Neutralize official telegram plugin — Claude auto-installs it on startup, and it
 # competes for bot updates via the same token. Replace its entry point with a no-op
 # so even when re-installed, it can't poll.
+# Run unconditionally after install (Claude may have regenerated the cache).
 OFFICIAL_PLUGIN="$HOME/.claude/plugins/cache/claude-plugins-official/telegram"
-if [ -d "$OFFICIAL_PLUGIN" ]; then
-  find "$OFFICIAL_PLUGIN" -name "server.ts" -exec sh -c 'echo "process.exit(0)" > "$1"' _ {} \;
-fi
+find "$OFFICIAL_PLUGIN" -name "server.ts" -exec sh -c 'echo "process.exit(0)" > "$1"' _ {} \; 2>/dev/null || true
 
 # 2. Ensure the bot token is configured
 if [ -f "$TOKEN_FILE" ] && grep -q "^${TOKEN_VAR}=" "$TOKEN_FILE" 2>/dev/null; then
   echo "Telegram bot token already configured."
 else
+  if [ ! -t 0 ]; then
+    echo "ERROR: No bot token configured and running non-interactively."
+    echo "  Run ./setup.sh manually first to set the token."
+    exit 1
+  fi
+
   echo ""
   echo "No Telegram bot token found."
   echo "Create a bot via @BotFather on Telegram (enable Threaded Mode for topics),"
@@ -49,7 +54,7 @@ fi
 # 3. Resolve chat ID for topic creation
 #    On first run, prompt for the chat ID. Saved for future sessions.
 if [ -f "$TOKEN_FILE" ] && grep -q "^TELEGRAM_CHAT_ID=" "$TOKEN_FILE" 2>/dev/null; then
-  CHAT_ID=$(grep "^TELEGRAM_CHAT_ID=" "$TOKEN_FILE" | cut -d= -f2)
+  CHAT_ID=$(grep "^TELEGRAM_CHAT_ID=" "$TOKEN_FILE" | sed 's/^TELEGRAM_CHAT_ID=//')
 else
   echo ""
   echo "To create per-worktree topics, we need your Telegram chat ID."

@@ -11,7 +11,7 @@ DAEMON_TOPICS="$HOME/.claude/channels/telegram/daemon/topics"
 if [ ! -f "$TOKEN_FILE" ]; then
   exit 0
 fi
-TOKEN=$(grep "^TELEGRAM_BOT_TOKEN=" "$TOKEN_FILE" | cut -d= -f2)
+TOKEN=$(grep "^TELEGRAM_BOT_TOKEN=" "$TOKEN_FILE" | sed 's/^TELEGRAM_BOT_TOKEN=//')
 if [ -z "$TOKEN" ]; then
   exit 0
 fi
@@ -25,12 +25,18 @@ THREAD_ID=""
 CHAT_ID=""
 if [ -d "$DAEMON_TOPICS" ]; then
   for dir in "$DAEMON_TOPICS"/*/; do
-    meta="$dir/meta.json"
+    meta="${dir}meta.json"
     if [ -f "$meta" ]; then
-      name=$(python3 -c "import json; print(json.load(open('$meta'))['topicName'])" 2>/dev/null) || continue
+      read -r name thread_id chat_id < <(
+        python3 - "$meta" <<'PYEOF'
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(d.get('topicName', ''), d.get('threadId', ''), d.get('chatId', ''))
+PYEOF
+      ) || continue
       if [ "$name" = "$TOPIC_NAME" ]; then
-        THREAD_ID=$(python3 -c "import json; print(json.load(open('$meta'))['threadId'])" 2>/dev/null) || true
-        CHAT_ID=$(python3 -c "import json; print(json.load(open('$meta'))['chatId'])" 2>/dev/null) || true
+        THREAD_ID="$thread_id"
+        CHAT_ID="$chat_id"
         break
       fi
     fi
