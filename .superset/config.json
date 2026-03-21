@@ -1,4 +1,4 @@
 {
   "setup": [],
-  "teardown": []
+  "teardown": ["./teardown.sh"]
 }
