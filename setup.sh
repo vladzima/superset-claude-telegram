@@ -1,13 +1,15 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PLUGIN="telegram-enhanced@vladzima/claude-telegram-enhanced"
-CHANNEL="plugin:telegram-enhanced@vladzima/claude-telegram-enhanced"
+MARKETPLACE="vladzima/claude-telegram-enhanced"
+PLUGIN="telegram-enhanced@claude-telegram-enhanced"
+CHANNEL="plugin:telegram-enhanced@claude-telegram-enhanced"
 TOKEN_FILE="$HOME/.claude/channels/telegram/.env"
 TOKEN_VAR="TELEGRAM_BOT_TOKEN"
 
-# 1. Install the enhanced Telegram plugin (idempotent — safe to re-run)
+# 1. Register marketplace and install plugin (idempotent — safe to re-run)
 echo "Ensuring enhanced Telegram plugin is installed..."
+claude plugin marketplace add "$MARKETPLACE" 2>/dev/null || true
 claude plugin install "$PLUGIN" 2>/dev/null || true
 
 # 2. Ensure the bot token is configured

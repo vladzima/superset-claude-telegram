@@ -39,7 +39,7 @@ Go to **Settings > Terminal > Add Preset** and configure:
 Create or switch to a workspace, then launch the **Claude Telegram** preset from the terminal preset bar.
 
 On first run, the script will:
-1. Install the [enhanced Telegram plugin](https://github.com/vladzima/claude-telegram-enhanced)
+1. Register the [enhanced Telegram plugin](https://github.com/vladzima/claude-telegram-enhanced) marketplace and install the plugin
 2. Prompt for your bot token (stored globally — only asked once)
 3. Prompt for your Telegram chat ID (get it from [@userinfobot](https://t.me/userinfobot) — only asked once)
 4. Create a Telegram topic named after the worktree
