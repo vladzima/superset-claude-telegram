@@ -10,6 +10,11 @@ TOKEN_VAR="TELEGRAM_BOT_TOKEN"
 # 1. Register marketplace and install plugin (idempotent — safe to re-run)
 echo "Ensuring enhanced Telegram plugin is installed..."
 claude plugin marketplace add "$MARKETPLACE" 2>/dev/null || true
+# Pull latest from marketplace repo (marketplace add skips if already on disk)
+MARKETPLACE_DIR="$HOME/.claude/plugins/marketplaces/claude-telegram-enhanced"
+if [ -d "$MARKETPLACE_DIR/.git" ]; then
+  git -C "$MARKETPLACE_DIR" pull --ff-only origin main 2>/dev/null || true
+fi
 claude plugin install "$PLUGIN" 2>/dev/null || true
 # Neutralize official telegram plugin — Claude auto-installs it on startup, and it
 # competes for bot updates via the same token. Replace its entry point with a no-op
