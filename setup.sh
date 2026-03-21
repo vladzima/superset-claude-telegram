@@ -11,6 +11,8 @@ TOKEN_VAR="TELEGRAM_BOT_TOKEN"
 echo "Ensuring enhanced Telegram plugin is installed..."
 claude plugin marketplace add "$MARKETPLACE" 2>/dev/null || true
 claude plugin install "$PLUGIN" 2>/dev/null || true
+# Remove official telegram plugin if auto-installed (it conflicts — same bot token, steals updates)
+claude plugin uninstall "telegram@claude-plugins-official" 2>/dev/null || true
 
 # 2. Ensure the bot token is configured
 if [ -f "$TOKEN_FILE" ] && grep -q "^${TOKEN_VAR}=" "$TOKEN_FILE" 2>/dev/null; then
@@ -64,5 +66,4 @@ if [ -n "${CHAT_ID:-}" ]; then
   export TELEGRAM_TOPIC_CHAT_ID="$CHAT_ID"
 fi
 exec claude --dangerously-skip-permissions \
-  --channels "$CHANNEL" \
   --dangerously-load-development-channels "$CHANNEL"
