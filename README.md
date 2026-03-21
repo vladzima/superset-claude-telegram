@@ -30,9 +30,8 @@ Go to **Settings > Terminal > Add Preset** and configure:
 |-------|-------|
 | **Name** | `Claude Telegram` |
 | **Command** | `./setup.sh` |
-| **Default** | No (see note below) |
 
-> **Why not default?** You may not want every worktree to auto-connect. Trigger it manually on the workspaces you want to control via Telegram.
+Optionally enable **Auto-run > When creating a workspace** to launch Claude Telegram automatically on every new worktree. This is safe — each worktree gets its own topic, so multiple sessions won't conflict.
 
 ### 3. Run the preset on a workspace
 
@@ -72,6 +71,7 @@ Superset worktree created
         ├── Sets TELEGRAM_TOPIC_NAME = git branch name
         └── Launches claude --channels with topic routing
               └── Plugin auto-creates topic in your Telegram chat
+                    ├── Sends a welcome message so the topic is visible
                     └── All messages scoped to that topic
 ```
 
@@ -91,5 +91,6 @@ chmod +x setup.sh
 ## Security notes
 
 - `--dangerously-skip-permissions` is required because permission prompts can't be answered via Telegram. Only use this in trusted project directories.
+- `--dangerously-load-development-channels` is needed because the enhanced plugin is not yet on Claude's official channel allowlist. You'll see a one-time confirmation prompt ("I am using this for local development") when launching — press Enter to continue.
 - After pairing, switch to allowlist mode to prevent unauthorized users from pairing with your bot.
 - The bot token is stored locally at `~/.claude/channels/telegram/.env` and never committed to any repo.
