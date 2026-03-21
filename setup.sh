@@ -53,8 +53,9 @@ else
   fi
 fi
 
-# 4. Derive topic name from the git branch (most meaningful identifier)
-TOPIC_NAME="$(git branch --show-current 2>/dev/null || basename "$(pwd)")"
+# 4. Derive topic name: Superset display name > git branch > directory name
+BRANCH="$(git branch --show-current 2>/dev/null)" || true
+TOPIC_NAME="${SUPERSET_WORKSPACE_NAME:-${BRANCH:-$(basename "$(pwd)")}}"
 
 # 5. Launch Claude Code with Telegram channel + topic routing
 echo "Starting Claude Code with Telegram (topic: ${TOPIC_NAME})..."

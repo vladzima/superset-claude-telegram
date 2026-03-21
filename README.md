@@ -68,7 +68,7 @@ Superset worktree created
         ├── Installs enhanced Telegram plugin (idempotent)
         ├── Checks bot token (prompts once, saves globally)
         ├── Checks chat ID (prompts once, saves globally)
-        ├── Sets TELEGRAM_TOPIC_NAME = git branch name
+        ├── Sets TELEGRAM_TOPIC_NAME = workspace display name
         └── Launches claude --channels with topic routing
               └── Plugin auto-creates topic in your Telegram chat
                     ├── Sends a welcome message so the topic is visible
@@ -77,7 +77,7 @@ Superset worktree created
 
 The bot token and chat ID persist at `~/.claude/channels/telegram/.env` — shared across all worktrees and projects.
 
-Topic name is derived from the current git branch (e.g., `feature-auth`), falling back to the directory name if git is unavailable.
+Topic name is derived from the Superset workspace name (what you type when creating a workspace), falling back to git branch or directory name.
 
 ## Adding to an existing project
 
