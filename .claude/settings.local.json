@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:docs.superset.sh)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(claude plugin:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  },
+  "enabledPlugins": {
+    "telegram@claude-plugins-official": true
+  }
+}
