@@ -1,14 +1,16 @@
 # superset-claude-telegram
 
-Auto-start Telegram-connected [Claude Code](https://docs.anthropic.com/en/docs/claude-code) sessions in [Superset](https://docs.superset.sh) worktrees.
+Auto-start Telegram-connected [Claude Code](https://docs.anthropic.com/en/docs/claude-code) sessions in [Superset](https://docs.superset.sh) worktrees — each worktree gets its own Telegram topic.
 
-Control Claude Code remotely via Telegram — each worktree gets its own autonomous Claude session you can message from your phone.
+Control Claude Code remotely via Telegram from your phone. Every worktree creates a dedicated topic in your bot's chat, so multiple sessions run simultaneously without conflicts.
+
+Uses [claude-telegram-enhanced](https://github.com/vladzima/claude-telegram-enhanced) for topic routing and response streaming.
 
 ## Prerequisites
 
 - [Superset](https://superset.sh) installed
 - [Claude Code](https://docs.anthropic.com/en/docs/claude-code) installed
-- A Telegram bot token from [@BotFather](https://t.me/BotFather)
+- A Telegram bot token from [@BotFather](https://t.me/BotFather) with **Threaded Mode** enabled
 
 ## Setup
 
@@ -30,54 +32,59 @@ Go to **Settings > Terminal > Add Preset** and configure:
 | **Command** | `./setup.sh` |
 | **Default** | No (see note below) |
 
-> **Why not default?** Only one worktree can run the Telegram bot at a time. Trigger it manually on the workspace you want to control via Telegram.
+> **Why not default?** You may not want every worktree to auto-connect. Trigger it manually on the workspaces you want to control via Telegram.
 
 ### 3. Run the preset on a workspace
 
 Create or switch to a workspace, then launch the **Claude Telegram** preset from the terminal preset bar.
 
 On first run, the script will:
-1. Install the Claude Code Telegram plugin (idempotent)
-2. Prompt you for your bot token (stored globally — only asked once)
-3. Launch Claude Code with Telegram channels and autonomous permissions
+1. Install the [enhanced Telegram plugin](https://github.com/vladzima/claude-telegram-enhanced)
+2. Prompt for your bot token (stored globally — only asked once)
+3. Prompt for your Telegram chat ID (get it from [@userinfobot](https://t.me/userinfobot) — only asked once)
+4. Create a Telegram topic named after the worktree
+5. Launch Claude Code with Telegram channels and autonomous permissions
 
 ### 4. Pair with your bot on Telegram
 
-Once Claude starts, DM your bot on Telegram. It will reply with a **6-character pairing code**. Enter it in Claude:
+On first use, DM your bot on Telegram — it replies with a **6-character pairing code**. In Claude:
 
 ```
 /telegram:access pair <code>
 ```
 
-After pairing, optionally lock access:
+Then lock access:
 
 ```
 /telegram:access policy allowlist
 ```
 
+You only need to pair once. After that, every new worktree just creates a new topic and starts working.
+
 ## How it works
 
-`setup.sh` does three things:
-
-```bash
-# 1. Install Telegram plugin (safe to re-run)
-claude plugin install telegram@claude-plugins-official
-
-# 2. Check/prompt for bot token → saves to ~/.claude/channels/telegram/.env
-# (only prompts on first ever run)
-
-# 3. Launch Claude with Telegram + autonomous mode
-claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official
+```
+Superset worktree created
+  └── Terminal Preset: ./setup.sh
+        ├── Installs enhanced Telegram plugin (idempotent)
+        ├── Checks bot token (prompts once, saves globally)
+        ├── Checks chat ID (prompts once, saves globally)
+        ├── Sets TELEGRAM_TOPIC_NAME = worktree name
+        └── Launches claude --channels with topic routing
+              └── Plugin auto-creates topic in your Telegram chat
+                    └── All messages scoped to that topic
 ```
 
-The bot token persists at `~/.claude/channels/telegram/.env` — shared across all worktrees and projects.
+The bot token and chat ID persist at `~/.claude/channels/telegram/.env` — shared across all worktrees and projects.
+
+Topic name is derived from `$SUPERSET_WORKSPACE_NAME` (set by Superset) or falls back to the directory name.
 
 ## Adding to an existing project
 
-Copy `setup.sh` to your project root and create the Terminal Preset as described above. The `.superset/config.json` in this repo is optional — it just provides empty setup/teardown hooks as a reference.
+Copy `setup.sh` to your project root and create the Terminal Preset as described above.
 
 ## Security notes
 
 - `--dangerously-skip-permissions` is required because permission prompts can't be answered via Telegram. Only use this in trusted project directories.
-- After pairing, switch to allowlist mode (`/telegram:access policy allowlist`) to prevent unauthorized users from pairing with your bot.
+- After pairing, switch to allowlist mode to prevent unauthorized users from pairing with your bot.
 - The bot token is stored locally at `~/.claude/channels/telegram/.env` and never committed to any repo.

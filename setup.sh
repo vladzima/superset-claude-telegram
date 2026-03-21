@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+PLUGIN="telegram-enhanced@vladzima/claude-telegram-enhanced"
+CHANNEL="plugin:telegram-enhanced@vladzima/claude-telegram-enhanced"
 TOKEN_FILE="$HOME/.claude/channels/telegram/.env"
 TOKEN_VAR="TELEGRAM_BOT_TOKEN"
 
-# 1. Install the Telegram plugin (idempotent — safe to re-run)
-echo "Ensuring Telegram plugin is installed..."
-claude plugin install telegram@claude-plugins-official 2>/dev/null || true
+# 1. Install the enhanced Telegram plugin (idempotent — safe to re-run)
+echo "Ensuring enhanced Telegram plugin is installed..."
+claude plugin install "$PLUGIN" 2>/dev/null || true
 
 # 2. Ensure the bot token is configured
 if [ -f "$TOKEN_FILE" ] && grep -q "^${TOKEN_VAR}=" "$TOKEN_FILE" 2>/dev/null; then
@@ -14,7 +16,8 @@ if [ -f "$TOKEN_FILE" ] && grep -q "^${TOKEN_VAR}=" "$TOKEN_FILE" 2>/dev/null; t
 else
   echo ""
   echo "No Telegram bot token found."
-  echo "Create a bot via @BotFather on Telegram, then paste the token below."
+  echo "Create a bot via @BotFather on Telegram (enable Threaded Mode for topics),"
+  echo "then paste the token below."
   echo ""
   printf "Bot token: "
   read -r TOKEN
@@ -29,6 +32,32 @@ else
   echo "Token saved."
 fi
 
-# 3. Launch Claude Code with Telegram channel
-echo "Starting Claude Code with Telegram..."
-exec claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official
+# 3. Resolve chat ID for topic creation
+#    On first run, prompt for the chat ID. Saved for future sessions.
+if [ -f "$TOKEN_FILE" ] && grep -q "^TELEGRAM_CHAT_ID=" "$TOKEN_FILE" 2>/dev/null; then
+  CHAT_ID=$(grep "^TELEGRAM_CHAT_ID=" "$TOKEN_FILE" | cut -d= -f2)
+else
+  echo ""
+  echo "To create per-worktree topics, we need your Telegram chat ID."
+  echo "DM @userinfobot on Telegram to get it, then paste below."
+  echo "(Leave empty to skip topic routing.)"
+  echo ""
+  printf "Chat ID: "
+  read -r CHAT_ID
+
+  if [ -n "$CHAT_ID" ]; then
+    echo "TELEGRAM_CHAT_ID=${CHAT_ID}" >> "$TOKEN_FILE"
+    echo "Chat ID saved."
+  fi
+fi
+
+# 4. Derive topic name from the worktree directory
+TOPIC_NAME="${SUPERSET_WORKSPACE_NAME:-$(basename "$(pwd)")}"
+
+# 5. Launch Claude Code with Telegram channel + topic routing
+echo "Starting Claude Code with Telegram (topic: ${TOPIC_NAME})..."
+export TELEGRAM_TOPIC_NAME="$TOPIC_NAME"
+if [ -n "${CHAT_ID:-}" ]; then
+  export TELEGRAM_TOPIC_CHAT_ID="$CHAT_ID"
+fi
+exec claude --dangerously-skip-permissions --channels "$CHANNEL"
