@@ -11,8 +11,13 @@ TOKEN_VAR="TELEGRAM_BOT_TOKEN"
 echo "Ensuring enhanced Telegram plugin is installed..."
 claude plugin marketplace add "$MARKETPLACE" 2>/dev/null || true
 claude plugin install "$PLUGIN" 2>/dev/null || true
-# Remove official telegram plugin if auto-installed (it conflicts — same bot token, steals updates)
-claude plugin uninstall "telegram@claude-plugins-official" 2>/dev/null || true
+# Neutralize official telegram plugin — Claude auto-installs it on startup, and it
+# competes for bot updates via the same token. Replace its entry point with a no-op
+# so even when re-installed, it can't poll.
+OFFICIAL_PLUGIN="$HOME/.claude/plugins/cache/claude-plugins-official/telegram"
+if [ -d "$OFFICIAL_PLUGIN" ]; then
+  find "$OFFICIAL_PLUGIN" -name "server.ts" -exec sh -c 'echo "process.exit(0)" > "$1"' _ {} \;
+fi
 
 # 2. Ensure the bot token is configured
 if [ -f "$TOKEN_FILE" ] && grep -q "^${TOKEN_VAR}=" "$TOKEN_FILE" 2>/dev/null; then
