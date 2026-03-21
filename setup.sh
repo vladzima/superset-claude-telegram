@@ -31,4 +31,4 @@ fi
 
 # 3. Launch Claude Code with Telegram channel
 echo "Starting Claude Code with Telegram..."
-exec claude --channels plugin:telegram@claude-plugins-official
+exec claude --dangerously-skip-permissions --channels plugin:telegram@claude-plugins-official
