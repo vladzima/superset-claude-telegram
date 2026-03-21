@@ -42,7 +42,7 @@ On first run, the script will:
 1. Register the [enhanced Telegram plugin](https://github.com/vladzima/claude-telegram-enhanced) marketplace and install the plugin
 2. Prompt for your bot token (stored globally — only asked once)
 3. Prompt for your Telegram chat ID (get it from [@userinfobot](https://t.me/userinfobot) — only asked once)
-4. Create a Telegram topic named after the worktree
+4. Create a Telegram topic named after the git branch
 5. Launch Claude Code with Telegram channels and autonomous permissions
 
 ### 4. Pair with your bot on Telegram
@@ -69,7 +69,7 @@ Superset worktree created
         ├── Installs enhanced Telegram plugin (idempotent)
         ├── Checks bot token (prompts once, saves globally)
         ├── Checks chat ID (prompts once, saves globally)
-        ├── Sets TELEGRAM_TOPIC_NAME = worktree name
+        ├── Sets TELEGRAM_TOPIC_NAME = git branch name
         └── Launches claude --channels with topic routing
               └── Plugin auto-creates topic in your Telegram chat
                     └── All messages scoped to that topic
@@ -77,7 +77,7 @@ Superset worktree created
 
 The bot token and chat ID persist at `~/.claude/channels/telegram/.env` — shared across all worktrees and projects.
 
-Topic name is derived from `$SUPERSET_WORKSPACE_NAME` (set by Superset) or falls back to the directory name.
+Topic name is derived from the current git branch (e.g., `feature-auth`), falling back to the directory name if git is unavailable.
 
 ## Adding to an existing project
 

@@ -53,8 +53,8 @@ else
   fi
 fi
 
-# 4. Derive topic name from the worktree directory
-TOPIC_NAME="${SUPERSET_WORKSPACE_NAME:-$(basename "$(pwd)")}"
+# 4. Derive topic name from the git branch (most meaningful identifier)
+TOPIC_NAME="$(git branch --show-current 2>/dev/null || basename "$(pwd)")"
 
 # 5. Launch Claude Code with Telegram channel + topic routing
 echo "Starting Claude Code with Telegram (topic: ${TOPIC_NAME})..."
@@ -62,4 +62,6 @@ export TELEGRAM_TOPIC_NAME="$TOPIC_NAME"
 if [ -n "${CHAT_ID:-}" ]; then
   export TELEGRAM_TOPIC_CHAT_ID="$CHAT_ID"
 fi
-exec claude --dangerously-skip-permissions --channels "$CHANNEL"
+exec claude --dangerously-skip-permissions \
+  --channels "$CHANNEL" \
+  --dangerously-load-development-channels "$CHANNEL"
